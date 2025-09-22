@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Voice Converter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Text to Voice Converter</h1>
+        <p>Convert your text to human-like speech with different accents from around the world</p>
+        
+        <form id="ttsForm">
+            <div class="form-group">
+                <label for="text">Enter your text:</label>
+                <textarea id="text" name="text" placeholder="Type your message here..." required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="voice">Choose Voice & Tone:</label>
+                <select id="voice" name="voice">
+                    {% for code, name in voices.items() %}
+                    <option value="{{ code }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+
+            
+            <div class="form-group">
+                <label for="speed">Speech Speed:</label>
+                <select id="speed" name="speed">
+                    <option value="slow">🐌 Slow (0.7x)</option>
+                    <option value="normal" selected>🚶 Normal (1.0x)</option>
+                    <option value="fast">🏃 Fast (1.4x)</option>
+                    <option value="very_fast">⚡ Very Fast (1.8x)</option>
+                </select>
+            </div>
+            
+            <button type="submit" id="convertBtn">🔊 Convert to Speech</button>
+        </form>
+        
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Converting your text to speech...</p>
+        </div>
+        
+        <div id="result" class="result hidden">
+            <h3>Your Audio is Ready!</h3>
+            <audio id="audioPlayer" controls></audio>
+            <br><br>
+            <a id="downloadLink" class="download-btn" download>📥 Download Audio</a>
+        </div>
+        
+        <div id="error" class="error hidden"></div>
+        
+        <div class="info-note">
+            <p><strong>Note:</strong> Different languages provide unique vocal characteristics and tones. Speed control: Slow for learning, Normal for presentations.</p>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
