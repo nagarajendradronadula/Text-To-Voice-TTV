@@ -1,3 +1,63 @@
+// Session and state management
+function saveState() {
+    const state = {
+        text: document.getElementById('text').value,
+        voice: document.querySelector('.tab-panel.active select').value,
+        speed: document.getElementById('speed').value,
+        activeTab: document.querySelector('.tab-btn.active').dataset.tab
+    };
+    localStorage.setItem('ttsState', JSON.stringify(state));
+}
+
+function loadState() {
+    const saved = localStorage.getItem('ttsState');
+    if (saved) {
+        const state = JSON.parse(saved);
+        document.getElementById('text').value = state.text || '';
+        document.getElementById('speed').value = state.speed || 'normal';
+        
+        // Set active tab
+        if (state.activeTab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelector(`[data-tab="${state.activeTab}"]`).classList.add('active');
+            document.getElementById(state.activeTab + '-tab').classList.add('active');
+        }
+        
+        // Set voice after tab is active
+        setTimeout(() => {
+            const activeSelect = document.querySelector('.tab-panel.active select');
+            if (activeSelect && state.voice) activeSelect.value = state.voice;
+        }, 100);
+        
+        // Update character count
+        const count = document.getElementById('text').value.length;
+        document.querySelector('.char-count').textContent = `${count} / 3000 characters`;
+    }
+}
+
+// Check login status
+async function checkAuth() {
+    try {
+        const response = await fetch('/api/user');
+        window.isLoggedIn = response.ok;
+        return response.ok;
+    } catch {
+        window.isLoggedIn = false;
+        return false;
+    }
+}
+
+// Initialize on page load
+window.addEventListener('load', async () => {
+    await checkAuth();
+    loadState();
+});
+
+// Save state on input changes
+document.getElementById('text').addEventListener('input', saveState);
+document.getElementById('speed').addEventListener('change', saveState);
+
 document.getElementById('ttsForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -106,7 +166,7 @@ function playPreview(tabType) {
     });
 }
 
-// Tab functionality
+// Tab functionality with state saving
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const tabName = this.dataset.tab;
@@ -118,7 +178,14 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         // Add active class to clicked tab and corresponding panel
         this.classList.add('active');
         document.getElementById(tabName + '-tab').classList.add('active');
+        
+        saveState();
     });
+});
+
+// Voice selection with state saving
+document.querySelectorAll('select').forEach(select => {
+    select.addEventListener('change', saveState);
 });
 
 // Character count functionality
