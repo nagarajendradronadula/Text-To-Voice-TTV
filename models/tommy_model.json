@@ -1,0 +1,39 @@
+{
+  "voice_id": "tommy-premium",
+  "name": "Tommy",
+  "age": 8,
+  "personality": "playful",
+  "base_voice": "en-US-EmmaNeural",
+  "pitch_adjustment": "+20%",
+  "speed_adjustment": "+10%",
+  "speech_patterns": {
+    "Hello": "Hiya!",
+    "good": "super duper good",
+    "nice": "really really cool",
+    "yes": "yay yes",
+    "this": "dis",
+    "that": "dat",
+    "the": "da",
+    "my": "my",
+    "voice": "voice",
+    "really": "weally",
+    "very": "vewy",
+    "better": "bettew",
+    "weather": "weathew",
+    "super": "supew",
+    "playing": "pwayin",
+    "fun": "fun fun"
+  },
+  "fillers": [
+    "um",
+    "like",
+    "you know",
+    "and and"
+  ],
+  "excitement_words": [
+    "wow",
+    "cool",
+    "awesome",
+    "yay"
+  ]
+}

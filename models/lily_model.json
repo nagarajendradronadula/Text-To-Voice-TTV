@@ -1,0 +1,39 @@
+{
+  "voice_id": "lily-premium",
+  "name": "Lily",
+  "age": 7,
+  "personality": "sweet",
+  "base_voice": "en-US-AnaNeural",
+  "pitch_adjustment": "+35%",
+  "speed_adjustment": "+15%",
+  "speech_patterns": {
+    "Hello": "Hewwo!",
+    "good": "sooo good",
+    "nice": "supew nice",
+    "my": "my wittle",
+    "voice": "voicey",
+    "this": "dis",
+    "really": "weally weally",
+    "very": "vewy vewy",
+    "little": "wittle",
+    "beautiful": "bootiful",
+    "pretty": "so pwetty",
+    "lovely": "wovely wovely",
+    "singing": "singin",
+    "dancing": "dancin",
+    "flowers": "pwetty fwowers",
+    "story": "cute stowy"
+  },
+  "fillers": [
+    "um",
+    "like",
+    "you know what",
+    "and"
+  ],
+  "excitement_words": [
+    "yay",
+    "cute",
+    "pretty",
+    "sweet"
+  ]
+}

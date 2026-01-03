@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiceForge - Geometric Text to Speech</title>
+    <meta name="description" content="Convert text to professional speech with geometric style and multiple voices">
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="/">
+                <img src="/images/logo.svg" alt="VoiceForge Logo" class="nav-logo">
+            </a>
+            <span class="nav-title">VoiceForge</span>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <a href="/login" class="nav-link">Login</a>
+            <a href="/register" class="nav-link">Register</a>
+        </div>
+    </nav>
+    
+    <div class="main-content">
+        <div class="container">
+        <div class="header">
+            <h1>VoiceForge</h1>
+            <p class="subtitle">Transform your text into professional human-like speech with AI-powered voices</p>
+        </div>
+        
+        <form id="ttsForm">
+            <div id="loginPrompt" class="login-prompt hidden">
+                <p>You have used your free generation. Please <a href="/login">login</a> or <a href="/register">register</a> to continue using VoiceForge.</p>
+            </div>
+            <div class="form-group">
+                <label for="text">Your Text Content (English Only)</label>
+                <textarea id="text" name="text" placeholder="Enter your English text here..." maxlength="3000" required></textarea>
+                <div class="char-count">0 / 3000 characters</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="voice">Voice & Accent Selection</label>
+                <div class="voice-tabs">
+                    <button type="button" class="tab-btn active" data-tab="natural">Natural</button>
+                    <button type="button" class="tab-btn" data-tab="normal">Normal</button>
+                </div>
+                <div class="tab-content">
+                    <div id="natural-tab" class="tab-panel active">
+                        <div class="voice-selector">
+                            <select id="voice-natural" name="voice">
+                                <option value="sarah-premium">Sarah - Friendly Female (Natural)</option>
+                                <option value="mike-premium">Mike - Casual Male (Conversational)</option>
+                                <option value="olivia-premium">Olivia - Warm Female (Empathetic)</option>
+                                <option value="david-premium">David - Authoritative Male (Leadership)</option>
+                                <option value="luna-premium">Luna - Energetic Female (Enthusiastic)</option>
+                                <option value="james-premium">James - Smooth Male (Sophisticated)</option>
+                                <option value="alex-premium">Alex - Professional Male (Business)</option>
+                                <option value="emma-premium">Emma - Cheerful Female (Upbeat)</option>
+                                <option value="ryan-premium">Ryan - Confident Male (Motivational)</option>
+                                <option value="zoe-premium">Zoe - Creative Female (Artistic)</option>
+                                <option value="tommy-premium">Tommy - Playful Boy (Cute)</option>
+                                <option value="lily-premium">Lily - Sweet Girl (Adorable)</option>
+                            </select>
+                            <button type="button" class="preview-btn" onclick="playPreview('natural')">Preview</button>
+                        </div>
+                    </div>
+                    <div id="normal-tab" class="tab-panel">
+                        <div class="voice-selector">
+                            <select id="voice-normal" name="voice">
+                                <optgroup label="US English">
+                                    <option value="en-US-AriaNeural">Aria - Natural Female</option>
+                                    <option value="en-US-AnaNeural">Ana - Friendly Female</option>
+                                    <option value="en-US-AvaNeural">Ava - Professional Female</option>
+                                    <option value="en-US-EmmaNeural">Emma - Warm Female</option>
+                                    <option value="en-US-JennyNeural">Jenny - Clear Female</option>
+                                    <option value="en-US-MichelleNeural">Michelle - Confident Female</option>
+                                    <option value="en-US-AndrewNeural">Andrew - Professional Male</option>
+                                    <option value="en-US-BrianNeural">Brian - Friendly Male</option>
+                                    <option value="en-US-ChristopherNeural">Christopher - Authoritative Male</option>
+                                    <option value="en-US-EricNeural">Eric - Casual Male</option>
+                                    <option value="en-US-GuyNeural">Guy - Conversational Male</option>
+                                    <option value="en-US-RogerNeural">Roger - Mature Male</option>
+                                    <option value="en-US-SteffanNeural">Steffan - Young Male</option>
+                                </optgroup>
+                                <optgroup label="British English">
+                                    <option value="en-GB-LibbyNeural">Libby - British Female</option>
+                                    <option value="en-GB-MaisieNeural">Maisie - Young British Female</option>
+                                    <option value="en-GB-SoniaNeural">Sonia - Professional British Female</option>
+                                    <option value="en-GB-RyanNeural">Ryan - British Male</option>
+                                    <option value="en-GB-ThomasNeural">Thomas - Mature British Male</option>
+                                </optgroup>
+                                <optgroup label="Australian English">
+                                    <option value="en-AU-NatashaNeural">Natasha - Australian Female</option>
+                                    <option value="en-AU-WilliamMultilingualNeural">William - Australian Male</option>
+                                </optgroup>
+                                <optgroup label="Canadian English">
+                                    <option value="en-CA-ClaraNeural">Clara - Canadian Female</option>
+                                    <option value="en-CA-LiamNeural">Liam - Canadian Male</option>
+                                </optgroup>
+                                <optgroup label="Indian English">
+                                    <option value="en-IN-NeerjaNeural">Neerja - Indian Female</option>
+                                    <option value="en-IN-PrabhatNeural">Prabhat - Indian Male</option>
+                                </optgroup>
+                                <optgroup label="Irish English">
+                                    <option value="en-IE-EmilyNeural">Emily - Irish Female</option>
+                                    <option value="en-IE-ConnorNeural">Connor - Irish Male</option>
+                                </optgroup>
+                                <optgroup label="South African English">
+                                    <option value="en-ZA-LeahNeural">Leah - South African Female</option>
+                                    <option value="en-ZA-LukeNeural">Luke - South African Male</option>
+                                </optgroup>
+                                <optgroup label="New Zealand English">
+                                    <option value="en-NZ-MollyNeural">Molly - New Zealand Female</option>
+                                    <option value="en-NZ-MitchellNeural">Mitchell - New Zealand Male</option>
+                                </optgroup>
+                                <optgroup label="Robot Voices (Offline)">
+                                    <option value="espeak-f1">Robot Female Voice</option>
+                                    <option value="espeak-m1">Robot Male Voice</option>
+                                </optgroup>
+                            </select>
+                            <button type="button" class="preview-btn" onclick="playPreview('normal')">Preview</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="speed">Speech Tempo</label>
+                <select id="speed" name="speed">
+                    <option value="slow">Slow & Clear (0.5x) - Perfect for Learning</option>
+                    <option value="normal" selected>Natural Pace (1.0x) - Ideal for Presentations</option>
+                    <option value="fast">Fast & Energetic (1.5x) - Great for Summaries</option>
+                    <option value="very_fast">Lightning Speed (2.0x) - Quick Reviews</option>
+                </select>
+            </div>
+            
+            <button type="submit" id="convertBtn" class="convert-btn">
+                Generate Professional Voice
+            </button>
+            
+            <button type="button" onclick="window.open('/feedback', '_blank')" class="feedback-btn">
+                Send Feedback
+            </button>
+        </form>
+        
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Crafting your professional voice experience...</p>
+        </div>
+        
+        <div id="result" class="result hidden">
+            <h3>Your Professional Audio is Ready!</h3>
+            <audio id="audioPlayer" controls controlsList="nodownload nofullscreen noremoteplayback noplaybackrate"></audio>
+            <br><br>
+            <a id="downloadLink" class="download-btn" download>
+                Download High-Quality Audio
+            </a>
+        </div>
+        
+        <div id="error" class="error hidden"></div>
+        
+        <div class="info-note">
+            <p><strong>Pro Tips:</strong> Choose different voices for unique characteristics and tones. Use speed control strategically: Slow for educational content, Normal for professional presentations, Fast for quick summaries. <strong>Multi-language support coming soon!</strong> Currently optimized for English text only.</p>
+        </div>
+    </div>
+    </div>
+    
+    <script src="/js/script.js"></script>
+    <script>
+        // Check login status via API
+        fetch('/api/user')
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Not logged in');
+                }
+            })
+            .then(user => {
+                // User is logged in
+                document.getElementById('navLinks').innerHTML = `
+                    <a href="/history" class="nav-link">History</a>
+                    <a href="/profile" class="nav-link">Profile</a>
+                    <span class="nav-user">${user.name}</span>
+                `;
+                window.isLoggedIn = true;
+            })
+            .catch(() => {
+                // User is not logged in
+                window.isLoggedIn = false;
+                const hasUsedFree = localStorage.getItem('hasUsedFreeGeneration');
+                if (hasUsedFree) {
+                    document.getElementById('loginPrompt').classList.remove('hidden');
+                    document.getElementById('convertBtn').disabled = true;
+                    document.getElementById('convertBtn').textContent = 'Login Required for More Generations';
+                }
+            });
+    </script>
+</body>
+</html>

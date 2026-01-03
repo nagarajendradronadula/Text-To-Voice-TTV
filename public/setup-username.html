@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Username - VoiceForge</title>
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="main-content">
+        <div class="container">
+            <div class="header">
+                <img src="/images/logo.svg" alt="VoiceForge Logo" class="logo">
+                <h1>Complete Setup</h1>
+                <p class="subtitle">Welcome {{userName}}! Please complete your profile</p>
+            </div>
+            
+            <div class="google-info">
+                <p><strong>Name:</strong> {{userName}}</p>
+                <p><strong>Email:</strong> {{userEmail}}</p>
+            </div>
+            
+            <form id="setupForm" class="auth-form">
+                <div class="form-group">
+                    <div class="label-with-status">
+                        <label for="username">Choose Username</label>
+                        <span id="usernameStatus" class="username-status"></span>
+                    </div>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="dateOfBirth">Date of Birth (Required)</label>
+                    <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+                </div>
+                
+                <button type="submit" class="convert-btn">Complete Setup</button>
+            </form>
+            
+            <div id="error" class="error hidden"></div>
+        </div>
+    </div>
+    
+    <script>
+        let usernameTimeout;
+        
+        document.getElementById('username').addEventListener('input', function() {
+            const username = this.value.trim();
+            const statusEl = document.getElementById('usernameStatus');
+            
+            clearTimeout(usernameTimeout);
+            
+            // Validate format (only letters and numbers)
+            const validFormat = /^[a-zA-Z0-9]*$/.test(username);
+            if (!validFormat && username.length > 0) {
+                statusEl.innerHTML = 'Only letters and numbers allowed';
+                statusEl.className = 'username-status taken';
+                return;
+            }
+            
+            if (username.length < 6) {
+                if (username.length > 0) {
+                    statusEl.innerHTML = 'At least 6 characters required';
+                    statusEl.className = 'username-status taken';
+                } else {
+                    statusEl.innerHTML = '';
+                    statusEl.className = 'username-status';
+                }
+                return;
+            }
+            
+            statusEl.innerHTML = 'Checking...';
+            statusEl.className = 'username-status checking';
+            
+            usernameTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/check-username/${username}`);
+                    const data = await response.json();
+                    
+                    if (data.available) {
+                        statusEl.innerHTML = 'Available';
+                        statusEl.className = 'username-status available';
+                    } else {
+                        statusEl.innerHTML = 'Taken';
+                        statusEl.className = 'username-status taken';
+                    }
+                } catch (error) {
+                    statusEl.innerHTML = 'Check failed';
+                    statusEl.className = 'username-status taken';
+                }
+            }, 500);
+        });
+        
+        document.getElementById('setupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            const errorDiv = document.getElementById('error');
+            
+            try {
+                const response = await fetch('/setup-username', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.location.href = '/';
+                } else {
+                    errorDiv.textContent = result.error;
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Setup failed. Please try again.';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

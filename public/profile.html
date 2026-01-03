@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - VoiceForge</title>
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .profile-section {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .section-header {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .section-header:hover {
+            background: #e9ecef;
+        }
+        .section-content {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+        .section-content.active {
+            max-height: 500px;
+            padding: 20px;
+            transition: max-height 0.3s ease-in, padding 0.3s ease-in;
+        }
+        .section-arrow {
+            transition: transform 0.3s ease;
+        }
+        .section-arrow.rotated {
+            transform: rotate(180deg);
+        }
+        .otp-section {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+        }
+        .otp-section.show {
+            display: block;
+        }
+        .send-otp-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .send-otp-btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <a href="/">
+                <img src="/images/logo.svg" alt="VoiceForge Logo" class="nav-logo">
+            </a>
+            <span class="nav-title">VoiceForge</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/history" class="nav-link">History</a>
+            <a href="/profile" class="nav-link active">Profile</a>
+            <button id="logoutBtn" class="logout-btn">Logout</button>
+        </div>
+    </nav>
+    
+    <div class="main-content">
+        <div class="container">
+        <div class="header">
+            <h1>User Profile</h1>
+            <p class="subtitle">Manage your account information</p>
+        </div>
+        
+        <form id="profileForm" class="auth-form">
+            <!-- Name Section -->
+            <div class="profile-section">
+                <div class="section-header" onclick="toggleSection('nameSection')">
+                    <h3>Personal Information</h3>
+                    <span class="section-arrow rotated">▼</span>
+                </div>
+                <div class="section-content active" id="nameSection">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required>
+                        <small>Name changes don't require verification</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Section -->
+            <div class="profile-section">
+                <div class="section-header" onclick="toggleSection('emailSection')">
+                    <h3>Email Address</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content" id="emailSection">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                        <small>Changing email requires verification</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                        <small>Changing username requires verification</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Section -->
+            <div class="profile-section" id="passwordSectionContainer">
+                <div class="section-header" onclick="toggleSection('passwordSection')">
+                    <h3>Change Password</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content" id="passwordSection">
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" name="currentPassword" placeholder="Enter current password">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" name="newPassword" placeholder="Enter new password">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm new password">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="otp-section" id="otpSection">
+                <h4>Email Verification Required</h4>
+                <p>We've sent a verification code to your email. Please enter it below:</p>
+                <div class="form-group">
+                    <label for="otp">Verification Code</label>
+                    <input type="text" id="otp" name="otp" placeholder="Enter 6-digit code" maxlength="6" oninput="checkOTPLength()">
+                    <button type="button" id="resendOtpBtn" class="send-otp-btn">Resend Code</button>
+                </div>
+            </div>
+            
+            <button type="submit" class="convert-btn">Update Profile</button>
+        </form>
+        
+        <div id="success" class="success hidden">Profile updated successfully!</div>
+        <div id="error" class="error hidden"></div>
+        </div>
+    </div>
+    
+    <script>
+        let originalData = {};
+        let hasPassword = false;
+        let otpSent = false;
+        
+        // Toggle section visibility
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const arrow = section.previousElementSibling.querySelector('.section-arrow');
+            
+            // Close all other sections
+            document.querySelectorAll('.section-content').forEach(content => {
+                if (content.id !== sectionId) {
+                    content.classList.remove('active');
+                    content.previousElementSibling.querySelector('.section-arrow').classList.remove('rotated');
+                }
+            });
+            
+            // Toggle current section
+            if (section.classList.contains('active')) {
+                section.classList.remove('active');
+                arrow.classList.remove('rotated');
+            } else {
+                section.classList.add('active');
+                arrow.classList.add('rotated');
+            }
+        }
+        
+        // Check OTP length and auto-submit
+        function checkOTPLength() {
+            const otpInput = document.getElementById('otp');
+            if (otpInput.value.length === 6) {
+                // Disable form fields during verification
+                toggleFormFields(false);
+                // Auto-submit when 6 digits are entered
+                document.getElementById('profileForm').dispatchEvent(new Event('submit'));
+            }
+        }
+        
+        // Toggle form fields enabled/disabled
+        function toggleFormFields(enabled) {
+            const fields = ['name', 'username', 'email', 'currentPassword', 'newPassword', 'confirmPassword'];
+            fields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) field.disabled = !enabled;
+            });
+            document.querySelector('.convert-btn').disabled = !enabled;
+        }
+        
+        // Load user data
+        async function loadProfile() {
+            try {
+                const response = await fetch('/api/user');
+                const user = await response.json();
+                
+                document.getElementById('name').value = user.name;
+                document.getElementById('username').value = user.username;
+                document.getElementById('email').value = user.email;
+                
+                originalData = { name: user.name, username: user.username, email: user.email };
+                hasPassword = user.hasPassword;
+                
+                // Show password section for all users, but add note for Google users
+                if (!hasPassword && user.isGoogleUser) {
+                    const passwordSection = document.getElementById('passwordSection');
+                    passwordSection.innerHTML = `
+                        <div class="form-group">
+                            <p style="color: #6c757d; font-style: italic;">You signed up with Google and don't have a password. You can set one here:</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">New Password</label>
+                            <input type="password" id="newPassword" name="newPassword" placeholder="Enter new password">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm new password">
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load profile:', error);
+            }
+        }
+        
+        // Check if sensitive data changed
+        function needsOTP() {
+            const currentData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value
+            };
+            
+            const passwordChange = document.getElementById('newPassword').value.trim() !== '';
+            const sensitiveChange = currentData.username !== originalData.username || 
+                                  currentData.email !== originalData.email;
+            
+            return sensitiveChange || passwordChange;
+        }
+        
+        // Send OTP
+        async function sendOTP() {
+            toggleFormFields(false); // Disable fields when sending OTP
+            try {
+                const response = await fetch('/api/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('otpSection').classList.add('show');
+                    otpSent = true;
+                    showMessage('Verification code sent to your email!', 'success');
+                } else {
+                    showMessage(result.error || 'Failed to send verification code', 'error');
+                    toggleFormFields(true); // Re-enable on error
+                }
+            } catch (error) {
+                showMessage('Failed to send verification code', 'error');
+                toggleFormFields(true); // Re-enable on error
+            }
+        }
+        
+        // Resend OTP
+        document.getElementById('resendOtpBtn').addEventListener('click', sendOTP);
+        
+        // Update profile
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            // Validate password confirmation
+            if (data.newPassword && data.newPassword !== data.confirmPassword) {
+                showMessage('New passwords do not match', 'error');
+                return;
+            }
+            
+            // Check if OTP is needed
+            if (needsOTP() && !otpSent) {
+                await sendOTP();
+                return;
+            }
+            
+            // Prepare request data
+            const requestData = {
+                name: data.name,
+                username: data.username,
+                email: data.email
+            };
+            
+            if (data.newPassword) {
+                requestData.password = data.currentPassword;
+                requestData.newPassword = data.newPassword;
+            }
+            
+            if (needsOTP()) {
+                requestData.otp = data.otp;
+            }
+            
+            try {
+                const response = await fetch('/api/user', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('Profile updated successfully!', 'success');
+                    originalData = { name: data.name, username: data.username, email: data.email };
+                    document.getElementById('otpSection').classList.remove('show');
+                    // Clear sensitive fields
+                    const currentPasswordField = document.getElementById('currentPassword');
+                    const newPasswordField = document.getElementById('newPassword');
+                    const confirmPasswordField = document.getElementById('confirmPassword');
+                    const otpField = document.getElementById('otp');
+                    
+                    if (currentPasswordField) currentPasswordField.value = '';
+                    if (newPasswordField) newPasswordField.value = '';
+                    if (confirmPasswordField) confirmPasswordField.value = '';
+                    if (otpField) otpField.value = '';
+                    otpSent = false;
+                    toggleFormFields(true); // Re-enable fields after success
+                } else {
+                    showMessage(result.error, 'error');
+                    toggleFormFields(true); // Re-enable fields on error
+                }
+            } catch (error) {
+                console.error('Profile update error:', error);
+                showMessage('Update failed. Please try again.', 'error');
+                toggleFormFields(true); // Re-enable fields on error
+            }
+        });
+        
+        // Show message helper
+        function showMessage(message, type) {
+            const errorDiv = document.getElementById('error');
+            const successDiv = document.getElementById('success');
+            
+            if (type === 'success') {
+                successDiv.textContent = message;
+                successDiv.classList.remove('hidden');
+                errorDiv.classList.add('hidden');
+                setTimeout(() => successDiv.classList.add('hidden'), 3000);
+            } else {
+                errorDiv.textContent = message;
+                errorDiv.classList.remove('hidden');
+                successDiv.classList.add('hidden');
+            }
+        }
+        
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await fetch('/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (error) {
+                console.error('Logout failed:', error);
+            }
+        });
+        
+        // Load profile on page load
+        loadProfile();
+    </script>
+</body>
+</html>

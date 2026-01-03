@@ -1,0 +1,32 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Square -->
+  <rect x="5" y="5" width="110" height="110" fill="#000" stroke="#fff" stroke-width="4"/>
+  
+  <!-- Inner geometric pattern -->
+  <rect x="15" y="15" width="90" height="90" fill="#fff" stroke="#000" stroke-width="2"/>
+  
+  <!-- Microphone Body -->
+  <rect x="52" y="35" width="16" height="25" fill="#000"/>
+  
+  <!-- Microphone Stand -->
+  <rect x="58" y="60" width="4" height="15" fill="#000"/>
+  <rect x="50" y="73" width="20" height="3" fill="#000"/>
+  
+  <!-- Geometric Sound Waves -->
+  <rect x="75" y="45" width="3" height="30" fill="#000"/>
+  <rect x="82" y="40" width="3" height="40" fill="#000"/>
+  <rect x="89" y="35" width="3" height="50" fill="#000"/>
+  
+  <!-- Text Symbols as squares -->
+  <rect x="23" y="43" width="4" height="4" fill="#000"/>
+  <rect x="33" y="48" width="3" height="3" fill="#000"/>
+  <rect x="28" y="58" width="4" height="4" fill="#000"/>
+  <rect x="38" y="63" width="3" height="3" fill="#000"/>
+  <rect x="23" y="73" width="4" height="4" fill="#000"/>
+  
+  <!-- Corner geometric elements -->
+  <rect x="25" y="25" width="8" height="2" fill="#000"/>
+  <rect x="87" y="25" width="8" height="2" fill="#000"/>
+  <rect x="25" y="93" width="8" height="2" fill="#000"/>
+  <rect x="87" y="93" width="8" height="2" fill="#000"/>
+</svg>
