@@ -263,7 +263,7 @@ def convert_with_premium_voice(text, voice, speed):
     
     # Check if voice has a dedicated model
     voice_model = load_voice_model(voice)
-    if voice_model:
+    if voice_model and 'base_voice' in voice_model:
         processed_text = apply_voice_model(text, voice_model)
         base_voice = voice_model['base_voice']
     else:
@@ -384,8 +384,12 @@ def main():
         
         print(json.dumps(result), flush=True)
         
+    except KeyError as e:
+        print(json.dumps({'error': f'Missing required field: {str(e)}'}), flush=True)
+    except json.JSONDecodeError as e:
+        print(json.dumps({'error': f'Invalid JSON input: {str(e)}'}), flush=True)
     except Exception as e:
-        print(json.dumps({'error': str(e)}), flush=True)
+        print(json.dumps({'error': f'Unexpected error: {str(e)}'}), flush=True)
 
 if __name__ == '__main__':
     main()
