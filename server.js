@@ -612,6 +612,11 @@ app.post('/convert', (req, res) => {
                 return res.status(500).json({ error: result.error });
             }
             
+            // Ensure audio_url is set for client compatibility
+            if (result.audio_data && !result.audio_url) {
+                result.audio_url = `data:audio/mp3;base64,${result.audio_data}`;
+            }
+            
             // Save to history only for logged-in users and non-preview requests
             if (req.session.userId && !isPreview) {
                 const historyEntry = new History({
@@ -619,7 +624,7 @@ app.post('/convert', (req, res) => {
                     text: cleanText,
                     voice,
                     speed,
-                    audioUrl: result.audio_url
+                    audioUrl: result.audio_url || `data:audio/mp3;base64,${result.audio_data}`
                 });
                 await historyEntry.save();
             }
