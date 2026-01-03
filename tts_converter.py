@@ -9,7 +9,7 @@ import asyncio
 import base64
 import re
 import random
-from kid_voice_engine import convert_with_kid_voice
+
 
 try:
     import edge_tts
@@ -370,11 +370,7 @@ def main():
         print(f"Processing: {text[:50]}... with voice: {voice}", file=sys.stderr)
         
         if voice.endswith('-premium'):
-            # Check for kid voices first
-            if 'tommy' in voice or 'lily' in voice:
-                result = convert_with_kid_voice(text, voice, speed)
-            else:
-                result = convert_with_premium_voice(text, voice, speed)
+            result = convert_with_premium_voice(text, voice, speed)
         elif voice.startswith('en-') and EDGE_TTS_AVAILABLE:
             result = convert_with_edge_tts(text, voice, speed)
         elif voice.startswith('espeak-'):
