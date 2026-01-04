@@ -310,6 +310,7 @@ app.get('/api/user', requireAuth, async (req, res) => {
 
 // Generate and send OTP
 app.post('/api/send-otp', requireAuth, async (req, res) => {
+    console.log('=== OTP ENDPOINT HIT ===');
     try {
         const user = await User.findById(req.session.userId);
         if (!user) {
@@ -322,6 +323,8 @@ app.post('/api/send-otp', requireAuth, async (req, res) => {
         user.otp = otp;
         user.otpExpires = otpExpires;
         await user.save();
+
+        console.log('OTP saved:', otp, 'for user:', user.email);
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -357,7 +360,7 @@ app.post('/api/send-otp', requireAuth, async (req, res) => {
 
         res.json({ success: true });
     } catch (error) {
-        console.error('Send OTP error:', error);
+        console.error('Send OTP error:', error.message, error.code);
         res.status(500).json({ error: 'Failed to send OTP' });
     }
 });
