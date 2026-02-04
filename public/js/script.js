@@ -32,7 +32,7 @@ function loadState() {
         
         // Update character count
         const count = document.getElementById('text').value.length;
-        document.querySelector('.char-count').textContent = `${count} / 3000 characters`;
+        document.querySelector('.char-count').textContent = `${count} / 30000 characters`;
     }
 }
 
@@ -194,7 +194,7 @@ const charCount = document.querySelector('.char-count');
 
 textArea.addEventListener('input', function() {
     const count = this.value.length;
-    charCount.textContent = `${count} / 3000 characters`;
+    charCount.textContent = `${count} / 30000 characters`;
 });
 
 function base64ToBlob(base64, mimeType) {

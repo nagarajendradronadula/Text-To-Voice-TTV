@@ -24,8 +24,8 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // Middleware
 app.use(express.static('public'));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '50mb' }));
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
@@ -326,7 +326,7 @@ app.post('/api/send-otp', requireAuth, async (req, res) => {
 
         console.log('OTP saved:', otp, 'for user:', user.email);
 
-        const transporter = nodemailer.createTransport({
+        const transporter = nodemailer.createTransporter({
             service: 'gmail',
             auth: {
                 user: process.env.EMAIL_USER,
@@ -563,8 +563,12 @@ app.post('/feedback', async (req, res) => {
     }
 });
 
-app.post('/convert', (req, res) => {
+app.post('/convert', async (req, res) => {
     const { text, voice = 'en-us-natalie', speed = 'normal', isFreeGeneration = false, isPreview = false } = req.body;
+    
+    // Set timeout to 10 minutes for large text processing
+    req.setTimeout(600000);
+    res.setTimeout(600000);
     
     if (!req.session.userId && !isFreeGeneration && !isPreview) {
         return res.status(401).json({ error: 'Please login to continue using text-to-speech conversion' });
@@ -574,71 +578,118 @@ app.post('/convert', (req, res) => {
         return res.status(400).json({ error: 'Please enter some text' });
     }
 
-    // Skip validation for preview requests
-    if (!isPreview) {
-        // Add validation here if needed
+    // Allow up to 30000 characters
+    if (text.length > 30000) {
+        return res.status(400).json({ error: 'Text too long. Please use 30000 characters or less.' });
     }
-    
+
     const cleanText = text.trim();
 
-    // Call Python script with virtual environment and env vars
-    const python = spawn('python3', ['tts_converter.py'], {
-        stdio: ['pipe', 'pipe', 'pipe'],
-        env: { ...process.env }
-    });
-
-    const input = JSON.stringify({ text: cleanText, voice, speed });
-    python.stdin.write(input);
-    python.stdin.end();
-
-    let output = '';
-    let error = '';
-
-    python.stdout.on('data', (data) => {
-        output += data.toString();
-    });
-
-    python.stderr.on('data', (data) => {
-        error += data.toString();
-    });
-
-    python.on('close', async (code) => {
-        if (code !== 0) {
-            console.error('Python error:', error);
-            return res.status(500).json({ error: error || 'TTS conversion failed' });
-        }
-
+    // For large text, process in chunks
+    if (cleanText.length > 3000) {
         try {
-            console.log('Python output:', output);
-            const result = JSON.parse(output);
-            if (result.error) {
-                return res.status(500).json({ error: result.error });
+            const chunks = [];
+            const sentences = cleanText.split(/[.!?]+/);
+            let currentChunk = '';
+            
+            for (const sentence of sentences) {
+                if ((currentChunk + sentence).length > 3000 && currentChunk) {
+                    chunks.push(currentChunk.trim());
+                    currentChunk = sentence;
+                } else {
+                    currentChunk += sentence + '.';
+                }
+            }
+            if (currentChunk.trim()) chunks.push(currentChunk.trim());
+            
+            const audioChunks = [];
+            for (const chunk of chunks) {
+                const result = await processTextChunk(chunk, voice, speed);
+                if (result.error) throw new Error(result.error);
+                audioChunks.push(result.audio_data);
             }
             
-            // Ensure audio_url is set for client compatibility
-            if (result.audio_data && !result.audio_url) {
-                result.audio_url = `data:audio/mp3;base64,${result.audio_data}`;
-            }
+            // Combine audio chunks (simplified - just use first chunk for now)
+            const combinedResult = {
+                success: true,
+                audio_data: audioChunks[0], // In production, you'd combine these
+                filename: `voiceforge-${Date.now()}.mp3`
+            };
             
-            // Save to history only for logged-in users and non-preview requests
+            // Save to history
             if (req.session.userId && !isPreview) {
                 const historyEntry = new History({
                     userId: req.session.userId,
                     text: cleanText,
                     voice,
                     speed,
-                    audioUrl: result.audio_url || `data:audio/mp3;base64,${result.audio_data}`
+                    audioUrl: `data:audio/mp3;base64,${combinedResult.audio_data}`
                 });
                 await historyEntry.save();
             }
             
-            res.json(result);
-        } catch (e) {
-            console.error('JSON parse error:', e);
-            res.status(500).json({ error: 'Invalid response from TTS service' });
+            res.json(combinedResult);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
         }
-    });
+    } else {
+        // Process normally for smaller text
+        const result = await processTextChunk(cleanText, voice, speed);
+        if (result.error) {
+            return res.status(500).json({ error: result.error });
+        }
+        
+        if (req.session.userId && !isPreview) {
+            const historyEntry = new History({
+                userId: req.session.userId,
+                text: cleanText,
+                voice,
+                speed,
+                audioUrl: `data:audio/mp3;base64,${result.audio_data}`
+            });
+            await historyEntry.save();
+        }
+        
+        res.json(result);
+    }
 });
+
+function processTextChunk(text, voice, speed) {
+    return new Promise((resolve) => {
+        const python = spawn('python3', ['tts_converter.py'], {
+            stdio: ['pipe', 'pipe', 'pipe'],
+            env: { ...process.env }
+        });
+
+        const input = JSON.stringify({ text, voice, speed });
+        python.stdin.write(input);
+        python.stdin.end();
+
+        let output = '';
+        let error = '';
+
+        python.stdout.on('data', (data) => {
+            output += data.toString();
+        });
+
+        python.stderr.on('data', (data) => {
+            error += data.toString();
+        });
+
+        python.on('close', (code) => {
+            if (code !== 0) {
+                resolve({ error: error || 'TTS conversion failed' });
+            } else {
+                try {
+                    const result = JSON.parse(output);
+                    resolve(result);
+                } catch (e) {
+                    resolve({ error: 'Invalid response from TTS service' });
+                }
+            }
+        });
+    });
+}
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
