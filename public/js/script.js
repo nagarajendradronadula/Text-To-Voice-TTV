@@ -104,6 +104,11 @@ document.getElementById('ttsForm').addEventListener('submit', async function(e) 
             throw new Error('Server returned invalid response format');
         }
         
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
         
         if (data.success && data.audio_data) {
             const audioBlob = base64ToBlob(data.audio_data, 'audio/mpeg');
