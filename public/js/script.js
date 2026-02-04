@@ -95,11 +95,15 @@ document.getElementById('ttsForm').addEventListener('submit', async function(e) 
             body: JSON.stringify({ text, voice, speed, isFreeGeneration })
         });
         
-        const data = await response.json();
-        
         if (!response.ok) {
-            throw new Error(data.error || 'Voice conversion failed. Please try again.');
+            throw new Error(`Server error: ${response.status}`);
         }
+        
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Server returned invalid response format');
+        }
+        
         
         if (data.success && data.audio_data) {
             const audioBlob = base64ToBlob(data.audio_data, 'audio/mpeg');
