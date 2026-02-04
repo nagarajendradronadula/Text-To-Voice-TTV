@@ -566,9 +566,9 @@ app.post('/feedback', async (req, res) => {
 app.post('/convert', async (req, res) => {
     const { text, voice = 'en-us-natalie', speed = 'normal', isFreeGeneration = false, isPreview = false } = req.body;
     
-    // Set timeout to 10 minutes for large text processing
-    req.setTimeout(600000);
-    res.setTimeout(600000);
+    // Set timeout to 20 minutes for large text processing
+    req.setTimeout(1200000);
+    res.setTimeout(1200000);
     
     if (!req.session.userId && !isFreeGeneration && !isPreview) {
         return res.status(401).json({ error: 'Please login to continue using text-to-speech conversion' });
@@ -586,14 +586,14 @@ app.post('/convert', async (req, res) => {
     const cleanText = text.trim();
 
     // For large text, process in chunks
-    if (cleanText.length > 3000) {
+    if (cleanText.length > 2000) {
         try {
             const chunks = [];
             const sentences = cleanText.split(/[.!?]+/);
             let currentChunk = '';
             
             for (const sentence of sentences) {
-                if ((currentChunk + sentence).length > 3000 && currentChunk) {
+                if ((currentChunk + sentence).length > 2000 && currentChunk) {
                     chunks.push(currentChunk.trim());
                     currentChunk = sentence;
                 } else {
