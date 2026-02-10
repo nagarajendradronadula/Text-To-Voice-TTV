@@ -17,6 +17,25 @@ try:
 except ImportError:
     EDGE_TTS_AVAILABLE = False
 
+def add_ssml_breaks(text, speed='normal'):
+    """Add SSML break tags for punctuation to create distinct pauses"""
+    speed_rates = {'slow': '-50%', 'normal': '+0%', 'fast': '+50%', 'very_fast': '+100%'}
+    rate = speed_rates.get(speed, '+0%')
+    
+    # Handle ellipsis first
+    text = text.replace('...', '<break time="1000ms"/>')
+    
+    # Replace commas with 400ms break
+    text = text.replace(',', '<break time="400ms"/>')
+    # Replace full stops with 800ms break
+    text = text.replace('.', '<break time="800ms"/>')
+    
+    # enhancing ? and ! to also have breaks
+    text = text.replace('?', '? <break time="800ms"/>')
+    text = text.replace('!', '! <break time="800ms"/>')
+    
+    return f'<prosody rate="{rate}">{text}</prosody>'
+
 def analyze_text_context(text):
     """Analyze text to determine appropriate filler placement"""
     contexts = {
@@ -270,10 +289,14 @@ def convert_with_premium_voice(text, voice, speed):
         processed_text = process_text_for_personality(text, config['style'])
         base_voice = config['base_voice']
     
+    # Add SSML breaks for pauses
+    ssml_text = add_ssml_breaks(processed_text, speed)
+    
     filename = f"audio_{uuid.uuid4().hex}.mp3"
     filepath = os.path.join(tempfile.gettempdir(), filename)
     
     async def generate_premium_speech():
+        # Pass plain text instead of SSML to avoid it being read aloud
         speed_rates = {'slow': '-50%', 'normal': '+0%', 'fast': '+50%', 'very_fast': '+100%'}
         rate = speed_rates.get(speed, '+0%')
         communicate = edge_tts.Communicate(processed_text, base_voice, rate=rate)
