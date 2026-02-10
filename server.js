@@ -7,8 +7,8 @@ const multer = require('multer');
 const { franc } = require('franc');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
+// const passport = require('passport');
+// const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const mongoose = require('mongoose');
 const User = require('./models/User');
 const History = require('./models/History');
@@ -33,60 +33,60 @@ app.use(session({
     cookie: { secure: false, maxAge: 7 * 24 * 60 * 60 * 1000 } // 7 days
 }));
 
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
-// Google OAuth Strategy
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/auth/google/callback"
-}, async (accessToken, refreshToken, profile, done) => {
-    try {
-        let user = await User.findOne({ googleId: profile.id });
-        if (user) {
-            return done(null, user);
-        }
-        
-        user = await User.findOne({ email: profile.emails[0].value });
-        if (user) {
-            user.googleId = profile.id;
-            await user.save();
-            return done(null, user);
-        }
-        
-        // Store Google profile data in session for username setup
-        return done(null, { 
-            isNewGoogleUser: true,
-            googleId: profile.id,
-            name: profile.displayName,
-            email: profile.emails[0].value
-        });
-    } catch (error) {
-        return done(error, null);
-    }
-}));
+// // Google OAuth Strategy
+// passport.use(new GoogleStrategy({
+//     clientID: process.env.GOOGLE_CLIENT_ID,
+//     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+//     callbackURL: "/auth/google/callback"
+// }, async (accessToken, refreshToken, profile, done) => {
+//     try {
+//         let user = await User.findOne({ googleId: profile.id });
+//         if (user) {
+//             return done(null, user);
+//         }
+//         
+//         user = await User.findOne({ email: profile.emails[0].value });
+//         if (user) {
+//             user.googleId = profile.id;
+//             await user.save();
+//             return done(null, user);
+//         }
+//         
+//         // Store Google profile data in session for username setup
+//         return done(null, { 
+//             isNewGoogleUser: true,
+//             googleId: profile.id,
+//             name: profile.displayName,
+//             email: profile.emails[0].value
+//         });
+//     } catch (error) {
+//         return done(error, null);
+//     }
+// }));
 
-passport.serializeUser((user, done) => {
-    if (user.isNewGoogleUser) {
-        done(null, { isNewGoogleUser: true, googleId: user.googleId });
-    } else {
-        done(null, user._id);
-    }
-});
+// passport.serializeUser((user, done) => {
+//     if (user.isNewGoogleUser) {
+//         done(null, { isNewGoogleUser: true, googleId: user.googleId });
+//     } else {
+//         done(null, user._id);
+//     }
+// });
 
-passport.deserializeUser(async (data, done) => {
-    try {
-        if (data.isNewGoogleUser) {
-            done(null, data);
-        } else {
-            const user = await User.findById(data);
-            done(null, user);
-        }
-    } catch (error) {
-        done(error, null);
-    }
-});
+// passport.deserializeUser(async (data, done) => {
+//     try {
+//         if (data.isNewGoogleUser) {
+//             done(null, data);
+//         } else {
+//             const user = await User.findById(data);
+//             done(null, user);
+//         }
+//     } catch (error) {
+//         done(error, null);
+//     }
+// });
 
 // Voice options (same as Python app)
 const VOICES = {
@@ -156,21 +156,21 @@ app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'register.html'));
 });
 
-app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+// app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
-    if (req.user.isNewGoogleUser) {
-        req.session.googleUserData = {
-            googleId: req.user.googleId,
-            name: req.user.name,
-            email: req.user.email
-        };
-        res.redirect('/setup-username');
-    } else {
-        req.session.userId = req.user._id;
-        res.redirect('/');
-    }
-});
+// app.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), (req, res) => {
+//     if (req.user.isNewGoogleUser) {
+//         req.session.googleUserData = {
+//             googleId: req.user.googleId,
+//             name: req.user.name,
+//             email: req.user.email
+//         };
+//         res.redirect('/setup-username');
+//     } else {
+//         req.session.userId = req.user._id;
+//         res.redirect('/');
+//     }
+// });
 
 app.get('/setup-username', (req, res) => {
     if (!req.session.googleUserData) {
@@ -326,37 +326,21 @@ app.post('/api/send-otp', requireAuth, async (req, res) => {
 
         console.log('OTP saved:', otp, 'for user:', user.email);
 
-        const transporter = nodemailer.createTransporter({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
-        });
+        // // Email sending commented out
+        // const transporter = nodemailer.createTransporter({
+        //     service: 'gmail',
+        //     auth: {
+        //         user: process.env.EMAIL_USER,
+        //         pass: process.env.EMAIL_PASS
+        //     }
+        // });
 
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: user.email,
-            subject: 'VoiceForge - Verification Code',
-            html: `
-                <div style="font-family: 'Courier New', monospace; max-width: 600px; margin: 0 auto; background: #fff; border: 8px solid #000;">
-                    <div style="background: repeating-linear-gradient(45deg, #000 0px, #000 10px, #fff 10px, #fff 20px); padding: 4px;">
-                        <div style="background: #fff; padding: 40px; text-align: center;">
-                            <h1 style="color: #000; font-size: 2.5em; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 20px;">VOICEFORGE</h1>
-                            <div style="border: 4px solid #000; padding: 30px; margin: 20px 0; background: #f8f8f8;">
-                                <h2 style="color: #000; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;">Verification Code</h2>
-                                <div style="background: #000; color: #fff; padding: 20px; font-size: 2em; font-weight: 900; letter-spacing: 4px; margin: 20px 0;">${otp}</div>
-                                <p style="color: #333; font-weight: 600; margin: 15px 0;">This code will expire in 10 minutes.</p>
-                                <p style="color: #666; font-size: 0.9em;">If you didn't request this, please ignore this email.</p>
-                            </div>
-                            <div style="border-top: 4px solid #000; padding-top: 20px; margin-top: 30px;">
-                                <p style="color: #000; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">VoiceForge Team</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `
-        });
+        // await transporter.sendMail({
+        //     from: process.env.EMAIL_USER,
+        //     to: user.email,
+        //     subject: 'VoiceForge - Verification Code',
+        //     html: `...`
+        // });
 
         res.json({ success: true });
     } catch (error) {
@@ -491,70 +475,28 @@ app.post('/feedback', async (req, res) => {
             return res.json({ success: true });
         }
         
-        // Create transporter (using Gmail as example)
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            }
-        });
+        // // Email sending commented out
+        // const transporter = nodemailer.createTransporter({
+        //     service: 'gmail',
+        //     auth: {
+        //         user: process.env.EMAIL_USER,
+        //         pass: process.env.EMAIL_PASS
+        //     }
+        // });
         
-        // Send feedback to you
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: process.env.FEEDBACK_EMAIL || process.env.EMAIL_USER,
-            subject: `VOICEFORGE - ${subject}`,
-            html: `
-                <div style="font-family: 'Courier New', monospace; max-width: 600px; margin: 0 auto; background: #fff; border: 8px solid #000;">
-                    <div style="background: repeating-linear-gradient(45deg, #000 0px, #000 10px, #fff 10px, #fff 20px); padding: 4px;">
-                        <div style="background: #fff; padding: 40px;">
-                            <h1 style="color: #000; font-size: 2.5em; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 20px; text-align: center;">VOICEFORGE</h1>
-                            <div style="border: 4px solid #000; padding: 30px; margin: 20px 0; background: #f8f8f8;">
-                                <h2 style="color: #000; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;">New Feedback</h2>
-                                <div style="border: 2px solid #000; padding: 15px; margin: 15px 0; background: #fff;">
-                                    <strong style="color: #000; text-transform: uppercase;">From:</strong> ${email}
-                                </div>
-                                <div style="border: 2px solid #000; padding: 15px; margin: 15px 0; background: #fff;">
-                                    <strong style="color: #000; text-transform: uppercase;">Subject:</strong> ${subject}
-                                </div>
-                                <div style="border: 2px solid #000; padding: 20px; margin: 15px 0; background: #fff;">
-                                    <strong style="color: #000; text-transform: uppercase;">Message:</strong><br><br>
-                                    ${message.replace(/\n/g, '<br>')}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `
-        });
+        // await transporter.sendMail({
+        //     from: process.env.EMAIL_USER,
+        //     to: process.env.FEEDBACK_EMAIL || process.env.EMAIL_USER,
+        //     subject: `VOICEFORGE - ${subject}`,
+        //     html: `...`
+        // });
         
-        // Send confirmation to user
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: 'VOICEFORGE - Feedback Received',
-            html: `
-                <div style="font-family: 'Courier New', monospace; max-width: 600px; margin: 0 auto; background: #fff; border: 8px solid #000;">
-                    <div style="background: repeating-linear-gradient(45deg, #000 0px, #000 10px, #fff 10px, #fff 20px); padding: 4px;">
-                        <div style="background: #fff; padding: 40px; text-align: center;">
-                            <h1 style="color: #000; font-size: 2.5em; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 20px;">VOICEFORGE</h1>
-                            <div style="border: 4px solid #000; padding: 30px; margin: 20px 0; background: #f8f8f8;">
-                                <h2 style="color: #000; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px;">Feedback Received</h2>
-                                <p style="color: #333; font-weight: 600; margin: 15px 0;">Thank you for your feedback!</p>
-                                <div style="background: #000; color: #fff; padding: 15px; margin: 20px 0; font-weight: 600;">
-                                    "${subject}"
-                                </div>
-                                <p style="color: #333; font-weight: 600; margin: 15px 0;">We'll review it and get back to you if needed.</p>
-                            </div>
-                            <div style="border-top: 4px solid #000; padding-top: 20px; margin-top: 30px;">
-                                <p style="color: #000; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">Best regards,<br>VoiceForge Team</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `
-        });
+        // await transporter.sendMail({
+        //     from: process.env.EMAIL_USER,
+        //     to: email,
+        //     subject: 'VOICEFORGE - Feedback Received',
+        //     html: `...`
+        // });
         
         res.json({ success: true });
     } catch (error) {
