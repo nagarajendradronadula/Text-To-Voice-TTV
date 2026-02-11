@@ -457,53 +457,53 @@ app.get('/', (req, res) => {
     res.send(html);
 });
 
-app.get('/feedback', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'feedback.html'));
-});
+// app.get('/feedback', (req, res) => {
+//     res.sendFile(path.join(__dirname, 'public', 'feedback.html'));
+// });
 
-app.post('/feedback', async (req, res) => {
-    try {
-        const { email, subject, message } = req.body;
-        
-        if (!email || !subject || !message) {
-            return res.status(400).json({ error: 'All fields are required' });
-        }
-        
-        // Skip email sending if credentials not configured
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.log('Feedback received:', { email, subject, message });
-            return res.json({ success: true });
-        }
-        
-        // // Email sending commented out
-        // const transporter = nodemailer.createTransporter({
-        //     service: 'gmail',
-        //     auth: {
-        //         user: process.env.EMAIL_USER,
-        //         pass: process.env.EMAIL_PASS
-        //     }
-        // });
-        
-        // await transporter.sendMail({
-        //     from: process.env.EMAIL_USER,
-        //     to: process.env.FEEDBACK_EMAIL || process.env.EMAIL_USER,
-        //     subject: `VOICEFORGE - ${subject}`,
-        //     html: `...`
-        // });
-        
-        // await transporter.sendMail({
-        //     from: process.env.EMAIL_USER,
-        //     to: email,
-        //     subject: 'VOICEFORGE - Feedback Received',
-        //     html: `...`
-        // });
-        
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Feedback error:', error);
-        res.status(500).json({ error: 'Failed to send feedback' });
-    }
-});
+// app.post('/feedback', async (req, res) => {
+//     try {
+//         const { email, subject, message } = req.body;
+//         
+//         if (!email || !subject || !message) {
+//             return res.status(400).json({ error: 'All fields are required' });
+//         }
+//         
+//         // Skip email sending if credentials not configured
+//         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+//             console.log('Feedback received:', { email, subject, message });
+//             return res.json({ success: true });
+//         }
+//         
+//         // // Email sending commented out
+//         // const transporter = nodemailer.createTransporter({
+//         //     service: 'gmail',
+//         //     auth: {
+//         //         user: process.env.EMAIL_USER,
+//         //         pass: process.env.EMAIL_PASS
+//         //     }
+//         // });
+//         
+//         // await transporter.sendMail({
+//         //     from: process.env.EMAIL_USER,
+//         //     to: process.env.FEEDBACK_EMAIL || process.env.EMAIL_USER,
+//         //     subject: `VOICEFORGE - ${subject}`,
+//         //     html: `...`
+//         // });
+//         
+//         // await transporter.sendMail({
+//         //     from: process.env.EMAIL_USER,
+//         //     to: email,
+//         //     subject: 'VOICEFORGE - Feedback Received',
+//         //     html: `...`
+//         // });
+//         
+//         res.json({ success: true });
+//     } catch (error) {
+//         console.error('Feedback error:', error);
+//         res.status(500).json({ error: 'Failed to send feedback' });
+//     }
+// });
 
 app.post('/convert', async (req, res) => {
     const { text, voice = 'en-us-natalie', speed = 'normal', isFreeGeneration = false, isPreview = false } = req.body;

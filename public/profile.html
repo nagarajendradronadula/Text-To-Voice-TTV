@@ -118,12 +118,12 @@
                     <div class="form-group">
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" required>
-                        <small>Changing email requires verification</small>
+                        <!-- <small>Changing email requires verification</small> -->
                     </div>
                     <div class="form-group">
                         <label for="username">Username</label>
                         <input type="text" id="username" name="username" required>
-                        <small>Changing username requires verification</small>
+                        <!-- <small>Changing username requires verification</small> -->
                     </div>
                 </div>
             </div>
@@ -150,7 +150,7 @@
                 </div>
             </div>
             
-            <div class="otp-section" id="otpSection">
+            <!-- <div class="otp-section" id="otpSection">
                 <h4>Email Verification Required</h4>
                 <p>We've sent a verification code to your email. Please enter it below:</p>
                 <div class="form-group">
@@ -158,7 +158,7 @@
                     <input type="text" id="otp" name="otp" placeholder="Enter 6-digit code" maxlength="6" oninput="checkOTPLength()">
                     <button type="button" id="resendOtpBtn" class="send-otp-btn">Resend Code</button>
                 </div>
-            </div>
+            </div> -->
             
             <button type="submit" class="convert-btn">Update Profile</button>
         </form>
@@ -254,45 +254,16 @@
         
         // Check if sensitive data changed
         function needsOTP() {
-            const currentData = {
-                username: document.getElementById('username').value,
-                email: document.getElementById('email').value
-            };
-            
-            const passwordChange = document.getElementById('newPassword').value.trim() !== '';
-            const sensitiveChange = currentData.username !== originalData.username || 
-                                  currentData.email !== originalData.email;
-            
-            return sensitiveChange || passwordChange;
+            return false; // OTP disabled
         }
         
-        // Send OTP
+        // Send OTP - disabled
         async function sendOTP() {
-            toggleFormFields(false); // Disable fields when sending OTP
-            try {
-                const response = await fetch('/api/send-otp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    document.getElementById('otpSection').classList.add('show');
-                    otpSent = true;
-                    showMessage('Verification code sent to your email!', 'success');
-                } else {
-                    showMessage(result.error || 'Failed to send verification code', 'error');
-                    toggleFormFields(true); // Re-enable on error
-                }
-            } catch (error) {
-                showMessage('Failed to send verification code', 'error');
-                toggleFormFields(true); // Re-enable on error
-            }
+            return;
         }
         
-        // Resend OTP
-        document.getElementById('resendOtpBtn').addEventListener('click', sendOTP);
+        // Resend OTP - disabled
+        // document.getElementById('resendOtpBtn').addEventListener('click', sendOTP);
         
         // Update profile
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
